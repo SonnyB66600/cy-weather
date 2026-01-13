@@ -25,6 +25,7 @@ jobs:
         # On exécute les commandes dans le dossier 'web'
         run: |
           npm install
+          rm -rf dist
           npm run build
         working-directory: ./web
 

@@ -1,0 +1,43 @@
+name: Security Scan (Trivy)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * 1' # Scan automatique tous les lundis à minuit
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner (FS mode)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs' # Scan le système de fichiers (fichiers package.json, requirements.txt)
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1' # Fait échouer le build si des failles critiques sont trouvées
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Trivy for Dockerfile misconfigurations
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          hide-progress: false
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+        
+      - name: Build API Image
+        run: docker build -t cy-weather-api ./api
+
+      - name: Scan API Image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'cy-weather-api'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'

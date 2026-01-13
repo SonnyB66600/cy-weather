@@ -21,4 +21,3 @@ api/tests/__pycache__/
 api/tests/*.pyc
 src/__pycache__/
 src/*.pyc
-uv.lock

@@ -13,9 +13,6 @@ ENV UV_LINK_MODE=copy
 # Ensure installed tools can be executed out of the box
 ENV UV_TOOL_BIN_DIR=/usr/local/bin
 
-# Copy dependency files first (for better layer caching)
-COPY pyproject.toml uv.lock ./
-
 # Install the project's dependencies
 # Note: Using --no-install-project to install only dependencies first
 RUN uv sync --locked --no-install-project --no-dev

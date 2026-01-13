@@ -7,6 +7,7 @@ from unittest.mock import AsyncMock, MagicMock
 # Note : Ajuste l'import selon la structure de ton projet
 from src.services.weather_service import weather_service, WeatherService
 from src.models.Weather import WeatherResponse, ForecastResponse
+HTTPX = "httpx.AsyncClient.get"
 
 @pytest.mark.asyncio
 class TestWeatherService:
@@ -54,21 +55,21 @@ class TestWeatherService:
     async def test_get_coordinates_success(self, mocker, mock_geocoding_response):
         """Teste la récupération réussie des coordonnées"""
         # Mock de httpx.AsyncClient.get
-        mock_get = mocker.patch("httpx.AsyncClient.get", new_callable=AsyncMock)
+        mock_get = mocker.patch(HTTPX, new_callable=AsyncMock)
         mock_get.return_value = MagicMock(spec=httpx.Response)
         mock_get.return_value.status_code = 200
         mock_get.return_value.json.return_value = mock_geocoding_response
 
         lat, lon, name, country = await weather_service._get_coordinates("Paris")
 
-        assert lat == 48.8566
-        assert lon == 2.3522
+        assert (lat >= 48.8566 - 0.00001 and lat <= 48.8566 + 0.00001 ) 
+        assert (lon >= 2.3522 - 0.00001 and lon <= 2.3522 + 0.00001 ) 
         assert name == "Paris"
         assert country == "FR"
 
     async def test_get_coordinates_city_not_found(self, mocker):
         """Teste l'erreur quand une ville n'est pas trouvée"""
-        mock_get = mocker.patch("httpx.AsyncClient.get", new_callable=AsyncMock)
+        mock_get = mocker.patch(HTTPX, new_callable=AsyncMock)
         mock_get.return_value = MagicMock(spec=httpx.Response)
         mock_get.return_value.json.return_value = {"results": []}
 
@@ -78,7 +79,7 @@ class TestWeatherService:
     async def test_get_current_weather(self, mocker, mock_geocoding_response, mock_current_weather_response):
         """Teste la récupération de la météo actuelle"""
         # On mock les deux appels API successifs
-        mock_get = mocker.patch("httpx.AsyncClient.get", new_callable=AsyncMock)
+        mock_get = mocker.patch(HTTPX, new_callable=AsyncMock)
         
         # Premier retour : Géocodage, Deuxième retour : Météo
         mock_res1 = MagicMock(spec=httpx.Response)
@@ -95,13 +96,13 @@ class TestWeatherService:
 
         assert isinstance(result, WeatherResponse)
         assert result.city == "Paris"
-        assert result.weather.temperature == 15.5
+        assert (result.weather.temperature >= 15.5 - 0.00001 and result.weather.temperature <= 15.5 + 0.00001)
         assert result.weather.description == "Ciel dégagé"
         assert result.weather.icon == "01d"
 
     async def test_get_forecast(self, mocker, mock_geocoding_response, mock_forecast_response):
         """Teste la récupération des prévisions"""
-        mock_get = mocker.patch("httpx.AsyncClient.get", new_callable=AsyncMock)
+        mock_get = mocker.patch(HTTPX, new_callable=AsyncMock)
         
         mock_res1 = MagicMock(spec=httpx.Response)
         mock_res1.json.return_value = mock_geocoding_response
@@ -117,7 +118,7 @@ class TestWeatherService:
 
         assert isinstance(result, ForecastResponse)
         assert len(result.forecast) == 2
-        assert result.forecast[0].temp_max == 18.0
+        assert (result.forecast[0].temp_max >= 18.0 - 0.00001 and result.forecast[0].temp_max <= 18.0 + 0.00001)
         assert result.forecast[1].description == "Pluie légère"
         assert result.forecast[1].precipitation_probability == 80
 

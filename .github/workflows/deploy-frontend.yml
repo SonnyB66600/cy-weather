@@ -21,6 +21,13 @@ jobs:
         with:
           node-version: '20'
           cache-dependency-path: './api/package-lock.json' 
+        
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Debug - List Files
+        # Cette commande va lister tous les fichiers pour voir où est le package.json
+        run: ls -R
 
       - name: Install dependencies
         run: npm install
@@ -48,10 +55,3 @@ jobs:
           cd api
           npm install
           npm run build
-          
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Debug - List Files
-        # Cette commande va lister tous les fichiers pour voir où est le package.json
-        run: ls -R

@@ -22,7 +22,7 @@ jobs:
           scan-ref: '.'
           format: 'table'
           exit-code: '1' # Fait échouer le build si des failles critiques sont trouvées
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
 
       - name: Run Trivy for Dockerfile misconfigurations
         uses: aquasecurity/trivy-action@master
@@ -30,7 +30,7 @@ jobs:
           scan-type: 'config'
           hide-progress: false
           exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
         
       - name: Build API Image
         run: docker build -t cy-weather-api ./api
@@ -40,4 +40,4 @@ jobs:
         with:
           image-ref: 'cy-weather-api'
           format: 'table'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'

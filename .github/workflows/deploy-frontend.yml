@@ -1,8 +1,8 @@
-name: Deploy Frontend to GitHub Pages
+name: Deploy Frontend
 
 on:
   push:
-    branches: [ main ] # Se déclenche lors d'un push sur main
+    branches: [ main ]
 
 permissions:
   contents: read
@@ -10,48 +10,37 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-deploy:
+  build_site:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache-dependency-path: './api/package-lock.json' 
-        
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Debug - List Files
-        # Cette commande va lister tous les fichiers pour voir où est le package.json
-        run: ls -R
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Install dependencies
-        run: npm install
-        working-directory: ./api
-
-      - name: Build project
-        run: npm run build
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
+      - name: Install and Build
+        # On exécute les commandes dans le dossier 'web'
+        run: |
+          npm install
+          npm run build
+        working-directory: ./web
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Le dossier généré par votre build (souvent 'dist' ou 'build')
-          path: './dist' 
+          # Le dossier de sortie de Vite sera dans web/dist
+          path: './web/dist'
 
-      - name: Deploy to GitHub Pages
+  deploy:
+    needs: build_site
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
-
-      - name: Install & Build
-        # Force l'exécution dans le dossier api
-        run: |
-          cd api
-          npm install
-          npm run build

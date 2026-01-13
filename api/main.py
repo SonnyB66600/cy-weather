@@ -1,7 +1,7 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from src.resources.weather_resource import router as weather_router
-
+from prometheus_fastapi_instrumentator import Instrumentator  # ← Ajoute
 
 tags_metadata = [
     {
@@ -24,13 +24,20 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 
-origins = ["*"]
+Instrumentator().instrument(app).expose(app)  # ← Ajoute cette ligne
+
+# Si vous développez en local :
+origins = [
+    "http://localhost:3000",  # Si votre frontend est en React/Vue/Next
+    "http://127.0.0.1:3000",
+    "http://localhost:5173",  # Si vous utilisez Vite
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],           # ["*"] autorise tout, idéal pour tester
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["*"],           # Autorise GET, POST, etc.
     allow_headers=["*"],
 )
 
@@ -38,14 +45,9 @@ router = APIRouter(
     prefix="/api",
 )
 
-
 @router.get("/health", tags=["Health"])
 async def health_check():
-    """
-    Health check endpoint to verify the API is running.
-    """
     return {"status": "ok"}
-
 
 app.include_router(router)
 app.include_router(weather_router, prefix="/api")
